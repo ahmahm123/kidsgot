@@ -1,22 +1,18 @@
 {
-  "name": "humanrent",
+  "name": "humanrent-monorepo",
+  "private": true,
   "version": "1.0.0",
-  "description": "HumanRent marketplace for matching work requirements with human talent.",
-  "type": "module",
-  "main": "server.js",
+  "packageManager": "pnpm@10.26.0",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js"
-  },
-  "keywords": [
-    "marketplace",
-    "cloud",
-    "jobs",
-    "humanrent"
-  ],
-  "author": "",
-  "license": "MIT",
-  "dependencies": {
-    "express": "^5.2.1"
+    "dev": "pnpm -r --parallel dev",
+    "dev:web": "pnpm --filter @humanrent/web dev",
+    "dev:mcp": "pnpm --filter @humanrent/mcp-server dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm --filter @humanrent/web typecheck",
+    "db:generate": "pnpm --filter @humanrent/web prisma generate",
+    "db:migrate": "pnpm --filter @humanrent/web prisma migrate dev",
+    "db:seed": "pnpm --filter @humanrent/web db:seed"
   }
 }

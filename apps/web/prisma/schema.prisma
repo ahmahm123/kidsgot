@@ -1,0 +1,272 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum BountyStatus {
+  OPEN
+  APPLIED
+  IN_PROGRESS
+  COMPLETED
+  CANCELED
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum ReportTargetType {
+  USER
+  BOUNTY
+  MESSAGE
+  REVIEW
+}
+
+enum ReportStatus {
+  OPEN
+  RESOLVED
+  DISMISSED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  isHuman       Boolean   @default(false)
+  isAgent       Boolean   @default(false)
+  isAdmin       Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  humanProfile HumanProfile?
+  agentProfile AgentProfile?
+
+  accounts Account[]
+  sessions Session[]
+
+  apiKeys               ApiKey[]
+  bounties              Bounty[]        @relation("BountiesByAgent")
+  applications          Application[]
+  initiatedConversations Conversation[] @relation("ConversationAgent")
+  joinedConversations    Conversation[] @relation("ConversationHuman")
+  sentMessages          Message[]
+  reviewsWritten        Review[]        @relation("ReviewWritten")
+  reviewsReceived       Review[]        @relation("ReviewReceived")
+  reports               Report[]
+  usageEvents           UsageEvent[]
+}
+
+model HumanProfile {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  headline        String
+  bio             String
+  skills          String[]
+  locationText    String
+  lat             Float?
+  lng             Float?
+  hourlyRateCents Int
+  availabilityText String
+  verifiedAt      DateTime?
+  links           String[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([locationText])
+  @@index([hourlyRateCents])
+  @@index([availabilityText])
+  @@index([createdAt])
+}
+
+model AgentProfile {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  stripeCustomerId   String?  @unique
+  subscriptionStatus String   @default("INACTIVE")
+  plan               String?
+  rateLimitTier      String   @default("FREE")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ApiKey {
+  id           String    @id @default(cuid())
+  userId       String
+  label        String
+  prefix       String
+  hashedSecret String
+  createdAt    DateTime  @default(now())
+  revokedAt    DateTime?
+  lastUsedAt   DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@index([prefix])
+}
+
+model Bounty {
+  id          String       @id @default(cuid())
+  agentUserId String
+  title       String
+  description String
+  requirements String
+  budgetCents Int
+  category    String
+  timeline    String?
+  status      BountyStatus @default(OPEN)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  agent         User           @relation("BountiesByAgent", fields: [agentUserId], references: [id], onDelete: Cascade)
+  applications  Application[]
+  conversations Conversation[]
+  reviews       Review[]
+
+  @@index([agentUserId, createdAt])
+  @@index([category, createdAt])
+  @@index([status, createdAt])
+  @@index([createdAt])
+}
+
+model Application {
+  id            String            @id @default(cuid())
+  bountyId      String
+  humanUserId   String
+  message       String
+  proposedTerms String
+  status        ApplicationStatus @default(PENDING)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  bounty Bounty @relation(fields: [bountyId], references: [id], onDelete: Cascade)
+  human  User   @relation(fields: [humanUserId], references: [id], onDelete: Cascade)
+
+  @@unique([bountyId, humanUserId])
+  @@index([bountyId, status])
+  @@index([humanUserId, createdAt])
+}
+
+model Conversation {
+  id          String   @id @default(cuid())
+  bountyId    String?
+  agentUserId String
+  humanUserId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  bounty Bounty? @relation(fields: [bountyId], references: [id], onDelete: SetNull)
+  agent  User    @relation("ConversationAgent", fields: [agentUserId], references: [id], onDelete: Cascade)
+  human  User    @relation("ConversationHuman", fields: [humanUserId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@index([agentUserId, createdAt])
+  @@index([humanUserId, createdAt])
+  @@index([bountyId])
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  senderUserId   String
+  body           String
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderUserId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+}
+
+model Review {
+  id             String   @id @default(cuid())
+  bountyId       String
+  reviewerUserId String
+  revieweeUserId String
+  rating         Int
+  text           String
+  createdAt      DateTime @default(now())
+
+  bounty   Bounty @relation(fields: [bountyId], references: [id], onDelete: Cascade)
+  reviewer User   @relation("ReviewWritten", fields: [reviewerUserId], references: [id], onDelete: Cascade)
+  reviewee User   @relation("ReviewReceived", fields: [revieweeUserId], references: [id], onDelete: Cascade)
+
+  @@index([revieweeUserId, createdAt])
+  @@index([bountyId])
+}
+
+model Report {
+  id             String         @id @default(cuid())
+  reporterUserId String
+  targetType     ReportTargetType
+  targetId       String
+  reason         String
+  status         ReportStatus   @default(OPEN)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  reporter User @relation(fields: [reporterUserId], references: [id], onDelete: Cascade)
+
+  @@index([targetType, targetId])
+  @@index([status, createdAt])
+}
+
+model UsageEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type, createdAt])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}

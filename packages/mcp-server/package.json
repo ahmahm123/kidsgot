@@ -1,0 +1,31 @@
+{
+  "name": "@humanrent/rentahuman-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for HumanRent API",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "rentahuman-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "dev": "tsx watch src/index.ts",
+    "lint": "echo \"No lint for mcp-server\"",
+    "test": "echo \"No tests for mcp-server\""
+  },
+  "dependencies": {
+    "@humanrent/shared": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.17.5",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.3"
+  }
+}
