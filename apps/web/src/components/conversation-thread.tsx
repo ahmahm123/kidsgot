@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -22,7 +22,7 @@ export function ConversationThread({ conversationId, currentUserId }: Conversati
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  async function loadMessages() {
+  const loadMessages = useCallback(async () => {
     const response = await fetch(`/api/v1/conversations/${conversationId}/messages`);
     const payload = await response.json();
     if (!response.ok) {
@@ -32,13 +32,13 @@ export function ConversationThread({ conversationId, currentUserId }: Conversati
     }
     setMessages(payload.messages);
     setLoading(false);
-  }
+  }, [conversationId]);
 
   useEffect(() => {
     loadMessages();
     const interval = window.setInterval(loadMessages, 4000);
     return () => window.clearInterval(interval);
-  }, [conversationId]);
+  }, [loadMessages]);
 
   async function sendMessage() {
     if (!text.trim()) {

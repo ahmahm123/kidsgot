@@ -4,6 +4,8 @@ import { HumanCard } from "@/components/human-card";
 import { HumanFilters } from "@/components/human-filters";
 import { Button } from "@/components/ui/button";
 
+export const dynamic = "force-dynamic";
+
 const PAGE_SIZE = 12;
 
 type PageProps = {

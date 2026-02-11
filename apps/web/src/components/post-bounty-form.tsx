@@ -13,7 +13,16 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
-type FormValues = z.infer<typeof createBountyInputSchema>;
+const formSchema = z.object({
+  title: z.string().min(8),
+  description: z.string().min(30),
+  requirements: z.string().min(10),
+  budgetCents: z.number().int().positive(),
+  category: z.string().min(2),
+  timeline: z.string().optional()
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 export function PostBountyForm() {
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +32,7 @@ export function PostBountyForm() {
     handleSubmit,
     formState: { errors, isSubmitting }
   } = useForm<FormValues>({
-    resolver: zodResolver(createBountyInputSchema),
+    resolver: zodResolver(formSchema),
     defaultValues: {
       category: BOUNTY_CATEGORIES[0]
     }
@@ -31,12 +40,17 @@ export function PostBountyForm() {
 
   const onSubmit = handleSubmit(async (values) => {
     setError(null);
+    const validated = createBountyInputSchema.safeParse(values);
+    if (!validated.success) {
+      setError("Please correct invalid bounty inputs.");
+      return;
+    }
     const response = await fetch("/api/v1/bounties", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(values)
+      body: JSON.stringify(validated.data)
     });
     const payload = await response.json();
     if (!response.ok) {

@@ -5,6 +5,8 @@ import { AGENT_SUBSCRIPTION_PRICE } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const counters = await getMarketplaceCounters();
 

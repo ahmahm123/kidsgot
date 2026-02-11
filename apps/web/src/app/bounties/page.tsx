@@ -1,8 +1,11 @@
 import Link from "next/link";
+import { BountyStatus } from "@prisma/client";
 import { db } from "@/lib/db";
 import { BountyCard } from "@/components/bounty-card";
 import { BountyFilters } from "@/components/bounty-filters";
 import { Button } from "@/components/ui/button";
+
+export const dynamic = "force-dynamic";
 
 const PAGE_SIZE = 12;
 
@@ -18,7 +21,10 @@ type PageProps = {
 };
 
 export default async function BountiesPage({ searchParams }: PageProps) {
-  const { q, category, status, minBudget, maxBudget, cursor } = searchParams;
+  const { q, category, status: statusRaw, minBudget, maxBudget, cursor } = searchParams;
+  const status = statusRaw && Object.values(BountyStatus).includes(statusRaw as BountyStatus)
+    ? (statusRaw as BountyStatus)
+    : undefined;
 
   const where = {
     AND: [
@@ -32,7 +38,7 @@ export default async function BountiesPage({ searchParams }: PageProps) {
           }
         : {},
       category ? { category } : {},
-      status ? { status: status as any } : {},
+      status ? { status } : {},
       minBudget ? { budgetCents: { gte: Number(minBudget) * 100 } } : {},
       maxBudget ? { budgetCents: { lte: Number(maxBudget) * 100 } } : {}
     ]

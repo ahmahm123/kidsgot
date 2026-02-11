@@ -4,6 +4,8 @@ import { db } from "@/lib/db";
 import { ConversationThread } from "@/components/conversation-thread";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+export const dynamic = "force-dynamic";
+
 type PageProps = {
   params: {
     id: string;

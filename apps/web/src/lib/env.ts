@@ -38,6 +38,6 @@ if (!parseResult.success) {
 
 export const env = parseResult.success
   ? parseResult.data
-  : ({
+  : (({
       ...process.env
-    } as z.infer<typeof envSchema>);
+    } as unknown) as z.infer<typeof envSchema>);

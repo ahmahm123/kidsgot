@@ -4,6 +4,8 @@ import { searchHumansInputSchema } from "@humanrent/shared";
 import { db } from "@/lib/db";
 import { badRequest, ok, serverError } from "@/lib/api-response";
 
+export const dynamic = "force-dynamic";
+
 const MAX_LIMIT = 50;
 
 export async function GET(request: NextRequest) {

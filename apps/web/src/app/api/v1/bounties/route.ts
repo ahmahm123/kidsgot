@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { BountyStatus } from "@prisma/client";
 import { createBountyInputSchema } from "@humanrent/shared";
 import { db } from "@/lib/db";
 import { checkAndConsumeRateLimit } from "@/lib/rate-limit";
@@ -13,7 +14,10 @@ export async function GET(request: NextRequest) {
     const query = request.nextUrl.searchParams;
     const q = query.get("q")?.trim() || "";
     const category = query.get("category")?.trim() || undefined;
-    const status = query.get("status")?.trim() || undefined;
+    const statusRaw = query.get("status")?.trim() || undefined;
+    const status = statusRaw && Object.values(BountyStatus).includes(statusRaw as BountyStatus)
+      ? (statusRaw as BountyStatus)
+      : undefined;
     const cursor = query.get("cursor")?.trim() || undefined;
     const limit = Math.min(Number(query.get("limit") || PAGE_SIZE_DEFAULT), 50);
     const minBudget = Number(query.get("minBudget") || 0);
@@ -32,7 +36,7 @@ export async function GET(request: NextRequest) {
             }
           : {},
         category ? { category } : {},
-        status ? { status: status as any } : {},
+        status ? { status } : {},
         minBudget ? { budgetCents: { gte: minBudget * 100 } } : {},
         maxBudget ? { budgetCents: { lte: maxBudget * 100 } } : {}
       ]

@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ReportButton } from "@/components/report-button";
 
+export const dynamic = "force-dynamic";
+
 type PageProps = {
   params: {
     id: string;

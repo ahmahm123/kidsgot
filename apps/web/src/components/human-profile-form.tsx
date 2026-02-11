@@ -15,7 +15,7 @@ const formSchema = z.object({
   skillsText: z.string().min(2),
   linksText: z.string().optional(),
   locationText: z.string().min(2),
-  hourlyRateCents: z.coerce.number().int().min(500),
+  hourlyRateCents: z.number().int().min(500),
   availabilityText: z.string().min(2)
 });
 
@@ -53,14 +53,14 @@ export function HumanProfileForm({ initialValues }: { initialValues?: Partial<Fo
         bio: values.bio,
         skills: values.skillsText
           .split(",")
-          .map((item) => item.trim())
+          .map((item: string) => item.trim())
           .filter(Boolean),
         locationText: values.locationText,
         hourlyRateCents: values.hourlyRateCents,
         availabilityText: values.availabilityText,
         links: (values.linksText || "")
           .split(",")
-          .map((item) => item.trim())
+          .map((item: string) => item.trim())
           .filter(Boolean)
       })
     });

@@ -1,10 +1,9 @@
-import { NextRequest } from "next/server";
 import { getServerAuthSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { ok, serverError, unauthorized } from "@/lib/api-response";
 import { getStripe } from "@/lib/stripe";
 
-export async function POST(_request: NextRequest) {
+export async function POST() {
   try {
     const session = await getServerAuthSession();
     if (!session?.user?.id) {
