@@ -1,0 +1,22 @@
+{
+  "name": "humanrent",
+  "version": "1.0.0",
+  "description": "HumanRent marketplace for matching work requirements with human talent.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "marketplace",
+    "cloud",
+    "jobs",
+    "humanrent"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
