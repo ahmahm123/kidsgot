@@ -13,6 +13,15 @@ pnpm --filter @humanrent/web prisma generate
 pnpm --filter @humanrent/web db:seed
 ```
 
+## Fast local setup
+
+From repo root:
+
+```bash
+pnpm setup:local
+pnpm dev:web
+```
+
 ## Required env
 
 Copy `.env.example` to `.env.local` and configure:
@@ -21,6 +30,8 @@ Copy `.env.example` to `.env.local` and configure:
 - `NEXTAUTH_SECRET`
 - OAuth and Email provider credentials (optional but recommended)
 - Stripe keys (`STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET`)
+
+If `DATABASE_URL` is missing, the homepage will still render with setup guidance, but marketplace data actions will require a running Postgres database.
 
 ## App features
 

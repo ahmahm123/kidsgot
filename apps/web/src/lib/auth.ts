@@ -35,7 +35,7 @@ if (env.EMAIL_SERVER_HOST && env.EMAIL_SERVER_USER && env.EMAIL_SERVER_PASSWORD 
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db),
-  secret: env.NEXTAUTH_SECRET,
+  secret: env.NEXTAUTH_SECRET || "dev-only-nextauth-secret-change-me",
   session: {
     strategy: "database"
   },

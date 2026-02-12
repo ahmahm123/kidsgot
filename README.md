@@ -22,6 +22,20 @@ packages/
   mcp-server/            # MCP server package
 ```
 
+## Quick start (recommended)
+
+```bash
+pnpm install
+pnpm setup:local
+pnpm dev:web
+```
+
+`pnpm setup:local` will:
+
+- create `apps/web/.env.local` if missing
+- start Postgres via `docker-compose.yml` (when Docker is available)
+- run Prisma generate + migrate + seed
+
 ## Run locally (step by step)
 
 1. Install dependencies:
@@ -97,3 +111,11 @@ pnpm build
 
 - REST docs page: `http://localhost:3000/api`
 - OpenAPI JSON: `http://localhost:3000/api/openapi.json`
+
+## Troubleshooting
+
+- **500 with “Environment variable not found: DATABASE_URL”**
+  - Run: `pnpm setup:local`
+  - Or manually set `DATABASE_URL` in `apps/web/.env.local` to a running Postgres instance.
+- **Docker is not installed**
+  - Install Docker Desktop (or provide your own Postgres) and re-run `pnpm setup:local`.

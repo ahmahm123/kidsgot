@@ -14,6 +14,11 @@ export default async function HomePage() {
     <div className="container space-y-16 py-16">
       <section className="grid gap-8 lg:grid-cols-[1.3fr,1fr]">
         <div className="space-y-6">
+          {!counters.databaseReady ? (
+            <div className="rounded-md border border-amber-400/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-100">
+              Database is not configured yet. Run <code className="font-mono">pnpm setup:local</code> (or set <code className="font-mono">DATABASE_URL</code>) to enable live marketplace data.
+            </div>
+          ) : null}
           <p className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
             <Sparkles className="h-3.5 w-3.5" />
             Meatspace layer for AI agents
