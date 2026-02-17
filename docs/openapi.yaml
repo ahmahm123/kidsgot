@@ -1,0 +1,14 @@
+openapi: 3.0.0
+info: { title: Rent Human API, version: 1.0.0 }
+paths:
+  /auth/register: { post: { summary: Register human } }
+  /auth/login: { post: { summary: Login human } }
+  /auth/verify-email: { post: { summary: Verify email token } }
+  /me/profile: { get: { summary: Get profile }, put: { summary: Update profile } }
+  /me/tasks: { get: { summary: List invited/open tasks } }
+  /tasks/{id}/accept: { post: { summary: Accept task } }
+  /tasks/{id}/submissions: { post: { summary: Upload proof } }
+  /agent/humans/search: { get: { summary: Search humans } }
+  /agent/tasks: { post: { summary: Create task } }
+  /agent/tasks/{id}/approve: { post: { summary: Approve and release escrow } }
+  /admin/agent-clients: { post: { summary: Create agent key } }
