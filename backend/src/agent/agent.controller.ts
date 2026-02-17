@@ -1,20 +1,19 @@
-import { TaskStatus } from '@prisma/client';
-import { TaskLifecycleService } from '../state-machine/task-lifecycle.service';
+type NextTaskStatus = 'INVITED' | 'OPEN';
+
   constructor(
     private prisma: PrismaService,
     private tasks: TasksService,
-    private matching: MatchingService,
     private lifecycle: TaskLifecycleService
   ) {}
   private async getOwnedTask(taskId: string, agentId: string) {
     return task;
   }
 
-  private async transitionOwnedTask(taskId: string, agentId: string, nextStatus: TaskStatus) {
+  private async transitionOwnedTask(taskId: string, agentId: string, nextStatus: NextTaskStatus) {
     const task = await this.getOwnedTask(taskId, agentId);
     const next = this.lifecycle.transition(task.status, nextStatus);
     return this.prisma.task.update({ where: { id: taskId }, data: { status: next } });
-    await this.transitionOwnedTask(id, req.agent.id, 'INVITED');
+    const filtered = profiles.filter((p: any) => (!q.skills || q.skills.split(',').every((s: string) => p.skills.includes(s))) && (!q.city || p.city === q.city) && (!q.availability || p.availability));
     return this.transitionOwnedTask(id, req.agent.id, 'OPEN');
     await this.getOwnedTask(id, req.agent.id);
     await this.prisma.auditLog.create({ data: { actorType: 'agent', actorId: req.agent.id, action: 'funded', entityType: 'Task', entityId: id } });

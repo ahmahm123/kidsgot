@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { EscrowStatus, InvitationStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { TaskLifecycleService } from '../state-machine/task-lifecycle.service';
 
@@ -12,7 +11,7 @@ export class TasksService {
   listForHuman(userId: string) {
     return this.prisma.task.findMany({
       where: {
-        OR: [{ invitations: { some: { userId, status: InvitationStatus.PENDING } } }, { status: 'OPEN' }]
+        OR: [{ invitations: { some: { userId, status: 'PENDING' } } }, { status: 'OPEN' }]
       }
     });
   }
@@ -28,16 +27,16 @@ export class TasksService {
 
         if (task.status === 'INVITED') {
           const invitationUpdate = await tx.taskInvitation.updateMany({
-            where: { taskId, userId, status: InvitationStatus.PENDING },
-            data: { status: InvitationStatus.ACCEPTED }
+            where: { taskId, userId, status: 'PENDING' },
+            data: { status: 'ACCEPTED' }
           });
           if (invitationUpdate.count !== 1) throw new BadRequestException('No pending invitation for this task');
         }
         const next = this.lifecycle.transition(task.status, 'ASSIGNED');
         await tx.taskAssignment.create({ data: { taskId, userId } });
         return tx.task.update({ where: { id: taskId }, data: { status: next } });
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+    } catch (error: unknown) {
+      if (typeof error === 'object' && error !== null && 'code' in error && (error as { code?: string }).code === 'P2002') {
         throw new BadRequestException('Already assigned');
       }
       throw error;
@@ -57,7 +56,7 @@ export class TasksService {
 
   async release(taskId: string) {
     const task = await this.getTask(taskId);
-    if (!task?.escrow || task.escrow.status !== EscrowStatus.FUNDED) throw new BadRequestException('Escrow not funded');
+    if (!task?.escrow || task.escrow.status !== 'FUNDED') throw new BadRequestException('Escrow not funded');
     if (task.status !== 'REVIEW') throw new BadRequestException('Task not in REVIEW');
     await this.prisma.escrow.update({ where: { taskId }, data: { status: 'RELEASED', releasedAt: new Date() } });
     await this.prisma.payout.create({ data: { userId: task.assignment!.userId, taskId, amount: task.budget, status: 'PAID' } });
