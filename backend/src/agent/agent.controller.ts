@@ -1,16 +1,28 @@
-import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { ApiKeyGuard } from './api-key.guard';
-import { TasksService } from '../tasks/tasks.service';
-import { MatchingService } from '../matching/matching.service';
+import { TaskStatus } from '@prisma/client';
+import { TaskLifecycleService } from '../state-machine/task-lifecycle.service';
+  constructor(
+    private prisma: PrismaService,
+    private tasks: TasksService,
+    private matching: MatchingService,
+    private lifecycle: TaskLifecycleService
+  ) {}
+  private async getOwnedTask(taskId: string, agentId: string) {
+    return task;
+  }
 
-@Controller('agent')
-@UseGuards(ApiKeyGuard)
-export class AgentController {
-  constructor(private prisma: PrismaService, private tasks: TasksService, private matching: MatchingService) {}
+  private async transitionOwnedTask(taskId: string, agentId: string, nextStatus: TaskStatus) {
+    const task = await this.getOwnedTask(taskId, agentId);
+    const next = this.lifecycle.transition(task.status, nextStatus);
+    return this.prisma.task.update({ where: { id: taskId }, data: { status: next } });
+    await this.transitionOwnedTask(id, req.agent.id, 'INVITED');
+    return this.transitionOwnedTask(id, req.agent.id, 'OPEN');
+    await this.getOwnedTask(id, req.agent.id);
+    await this.prisma.auditLog.create({ data: { actorType: 'agent', actorId: req.agent.id, action: 'funded', entityType: 'Task', entityId: id } });
+    await this.getOwnedTask(id, req.agent.id);
+    await this.getOwnedTask(id, req.agent.id);
 
-  @Get('humans/search')
-  async search(@Query() q: any) {
+    await this.getOwnedTask(id, req.agent.id);
+    await this.getOwnedTask(id, req.agent.id);
     const profiles = await this.prisma.humanProfile.findMany({ include: { user: true } });
     const filtered = profiles.filter(p => (!q.skills || q.skills.split(',').every((s: string) => p.skills.includes(s))) && (!q.city || p.city === q.city) && (!q.availability || p.availability));
     return filtered;

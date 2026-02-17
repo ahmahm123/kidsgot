@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { EscrowStatus, InvitationStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { TaskLifecycleService } from '../state-machine/task-lifecycle.service';
-import { EscrowStatus, InvitationStatus } from '@prisma/client';
 
 const BLOCKLIST = ['fraud', 'weapon', 'violence'];
 
@@ -20,18 +20,27 @@ export class TasksService {
   getTask(id: string) { return this.prisma.task.findUnique({ where: { id }, include: { messages: true, submissions: true, escrow: true, assignment: true } }); }
 
   async accept(taskId: string, userId: string) {
-    const task = await this.getTask(taskId);
-    if (!task) throw new BadRequestException('Task not found');
-    if (task.assignment) throw new BadRequestException('Already assigned');
-    const next = this.lifecycle.transition(task.status, 'ASSIGNED');
-    await this.prisma.taskInvitation.updateMany({ where: { taskId, userId }, data: { status: 'ACCEPTED' } });
-    await this.prisma.taskAssignment.create({ data: { taskId, userId } });
-    return this.prisma.task.update({ where: { id: taskId }, data: { status: next } });
-  }
+    try {
+      return await this.prisma.$transaction(async tx => {
+        const task = await tx.task.findUnique({ where: { id: taskId }, include: { assignment: true } });
+        if (!task) throw new BadRequestException('Task not found');
+        if (task.assignment) throw new BadRequestException('Already assigned');
 
-  decline(taskId: string, userId: string) { return this.prisma.taskInvitation.updateMany({ where: { taskId, userId }, data: { status: 'DECLINED' } }); }
-  message(taskId: string, senderType: string, content: string) { return this.prisma.message.create({ data: { taskId, senderType, content } }); }
-
+        if (task.status === 'INVITED') {
+          const invitationUpdate = await tx.taskInvitation.updateMany({
+            where: { taskId, userId, status: InvitationStatus.PENDING },
+            data: { status: InvitationStatus.ACCEPTED }
+          });
+          if (invitationUpdate.count !== 1) throw new BadRequestException('No pending invitation for this task');
+        }
+        const next = this.lifecycle.transition(task.status, 'ASSIGNED');
+        await tx.taskAssignment.create({ data: { taskId, userId } });
+        return tx.task.update({ where: { id: taskId }, data: { status: next } });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        throw new BadRequestException('Already assigned');
+      }
+      throw error;
   async submission(taskId: string, userId: string, note: string, proofFiles: string[]) {
     return this.prisma.submission.create({ data: { taskId, userId, note, proofFiles } });
   }
