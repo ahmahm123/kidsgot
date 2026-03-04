@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { Bot, Code2, Home, Search, Trophy } from "lucide-react";
+import { Bot, Calculator, Code2, Home, Search, Trophy } from "lucide-react";
 import { AuthButtons } from "@/components/auth-buttons";
 
 const links = [
   { href: "/", label: "Home", icon: Home },
   { href: "/browse", label: "Browse Humans", icon: Search },
   { href: "/bounties", label: "Bounties", icon: Trophy },
+  { href: "/calculator", label: "Calculator", icon: Calculator },
   { href: "/for-agents", label: "For Agents", icon: Bot },
   { href: "/api", label: "API / MCP", icon: Code2 }
 ];
