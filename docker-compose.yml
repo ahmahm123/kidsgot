@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: humanrent-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: humanrent
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d humanrent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - humanrent-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  humanrent-postgres-data:
